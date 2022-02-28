@@ -1,4 +1,3 @@
-from venv import create
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -7,66 +6,69 @@ import matplotlib.cm as cm
 import random as rd
 
 
-def genererGrille(width, height):
-    grille = []
+def generateGrille():
+    global width, height
+    maze = []
     temp = []
-    paireColumn = 0
-    paireLine = 0
     nbrColor = 9
     for line in range(height-1):
-        if(paireLine % 2):
+        paireColumn = 0
+        if(line % 2):
             temp.append(1)
             for column in range(1, width-1):
-                temp.append(nbrColor if paireColumn % 2 else 1)
-                paireColumn += 1
+                temp.append(nbrColor if column % 2 else 1)
                 nbrColor += 1
             temp.append(1)
-            grille.append(temp)
+            maze.append(temp)
             temp = []
         else:
-            grille.append([1 for i in range(width)])
-            paireColumn += 1
-        paireLine += 1
-    grille.append([1 for i in range(width)])
-    grille = np.array(grille)
+            maze.append([1 for i in range(width)])
+    maze.append([1 for i in range(width)])
+    maze = np.array(maze)
+    if(not(width % 2 == 0 and height == 0)):
+        maze[1][0] = maze[1][1]
+        maze[height-2][width-1] = maze[height-3][width-3]
+    else:
+        maze[height-2][width-1] = maze[height-2][width-2]
+        maze[1][0] = maze[1][1]
+    return maze
 
-    grille[height-2][width-1] = grille[height-2][width-2]
-    grille[1][0] = grille[1][1]
-    return grille
 
-
-def chooseRdWall(grille, width, height):
+def chooseRdWall():
+    global maze, width, height
     wall = 0
     line, column = 0, 0
     while wall != 1:
         line, column = rd.randint(0, height-1), rd.randint(0, width-1)
         # we don't want to take the main walls
         if(line != 0 and line != 0 and column != height-1 and column != 0):
-            wall = grille[line, column]
+            wall = maze[line, column]
 
     return line, column
 
 
-def changeColor(nbrToChange, nbr, grille):
-    for line in range(len(grille)-1):
-        for column in range(len(grille)-1):
-            if(grille[line][column] == nbrToChange and nbr != 1 and nbrToChange != 1):
-                grille[line][column] = nbr
-                if(column == width-2 and line==height-2):
-                    grille[line][column+1] = nbr
-    return grille
+def changeColor(nbrToChange, nbr):
+    global maze, width, height
+    for line in range(height-1):
+        for column in range(width-1):
+            if(maze[line][column] == nbrToChange and nbr != 1 and nbrToChange != 1):
+                maze[line][column] = nbr
+                if(column == width-2 and line == height-2):
+                    maze[line][column+1] = nbr
+    return maze
 
 
-def breakWall(grille, width, height):
-    line, column = chooseRdWall(grille, width, height)
+def breakWall():
+    global maze, width, height
+    line, column = chooseRdWall()
     if(column+1 < width and line+1 < height and column != 0 and line != 0):
-        if(grille[line][column-1] != grille[line][column+1]):
-            grille[line][column] = grille[line][column-1]
-            changeColor(grille[line][column+1], grille[line][column-1], grille)
-        if(grille[line-1][column] != grille[line+1][column]):
-            grille[line][column] = grille[line-1][column]
-            changeColor(grille[line+1][column], grille[line-1][column], grille)
-    return grille
+        if(maze[line][column-1] != maze[line][column+1]):
+            maze[line][column] = maze[line][column-1]
+            changeColor(maze[line][column+1], maze[line][column-1])
+        if(maze[line-1][column] != maze[line+1][column]):
+            maze[line][column] = maze[line-1][column]
+            changeColor(maze[line+1][column], maze[line-1][column])
+    return maze
 
 
 def sameNumbersInTab(tab):
@@ -78,57 +80,50 @@ def sameNumbersInTab(tab):
     return 0
 
 
-def createMaze(grille, width, height):
-    maze = grille.copy()
+def createMaze(anim=0):
+    global width, height, maze, sameNumbers
+
     # this table have to be 100% True
-    sameNumbers = [False for i in range(height)]
-    while False in sameNumbers :
+    while False in sameNumbers:
         for i in range(height):
-            temp = list(filter(lambda a: a != 1,maze[i].copy()))
+            temp = list(filter(lambda a: a != 1, maze[i].copy()))
             if(temp != []):
                 temp = list(filter(lambda a: a != temp[0], temp))
                 if(temp != []):
-                    maze = breakWall(maze, width, height)
+                    maze = breakWall()
                 else:
                     sameNumbers[i] = True
             else:
                 sameNumbers[i] = True
-        # yield maze
-        return maze
-
-width, height = 101, 101
-nbr = 0
-
-maze = np.array(genererGrille(width, height))
-
-M=np.array([[0,0,100,100,100,100,100,100,300,300,300,300,300,300,500,500,500,500,500,500,1000,1000,1000,1000] for i in range(0,20)]) 
-
-def update(i):
-    global maze
-    maze = createMaze(maze, width, height)
-    matrice.set_array(maze)
-
-fig, ax = plt.subplots()
-matrice = ax.matshow(maze)
-plt.colorbar(matrice)
-
-ani = FuncAnimation(fig, update, frames=19, interval=500)
-plt.show()
+        if(anim):
+            return maze
+    print(maze)
+    return maze
 
 
+def showAnimationMaze():
+    def update(i):
+        global maze
+        maze = createMaze(1)
+        matrice.set_array(maze)
+
+    fig, ax = plt.subplots()
+    matrice = ax.matshow(maze)
+    matrice.set_cmap(cmap=plt.cm.gnuplot2)
+    ani = FuncAnimation(fig, update, frames=19, interval=1000)
+    plt.show()
 
 
+def showMaze():
+    maze = createMaze()
 
-# fig, ax = plt.subplots()
-# matrice = ax.matshow(maze)
-# plt.colorbar(matrice)
-
-# ani = FuncAnimation(fig, createMaze(maze, width, height), frames=19, interval=500)
-# plt.show()
+    plt.pcolor(maze, cmap=plt.cm.gnuplot2)
+    plt.show()
 
 
-# maze = createMaze(maze, width, height)
-# plt.pcolor(maze, cmap=plt.cm.gnuplot2)
-# fig = plt.figure(figsize=(5,2))
-# anim = FuncAnimation(fig,frames=createMaze(maze, width, height),interval=100)
-# plt.show()
+if __name__ == "__main__":
+
+    width, height = 10, 10
+    sameNumbers = [False for i in range(height)]
+    maze = np.array(generateGrille())
+    showMaze()
