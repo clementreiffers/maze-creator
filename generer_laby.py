@@ -25,12 +25,14 @@ def generateGrille():
             maze.append([1 for i in range(width)])
     maze.append([1 for i in range(width)])
     maze = np.array(maze)
-    if(not(width % 2 == 0 and height == 0)):
-        maze[1][0] = maze[1][1]
-        maze[height-2][width-1] = maze[height-3][width-3]
-    else:
+    if(not(width % 2 == 0 and height%2 == 0)):
         maze[height-2][width-1] = maze[height-2][width-2]
         maze[1][0] = maze[1][1]
+        print("test")
+    else:
+        maze[1][0] = maze[1][1]
+        maze[height-3][width-1] = maze[height-3][width-3]
+        maze[height-3][width-2] = maze[height-3][width-3]
     return maze
 
 
@@ -41,20 +43,20 @@ def chooseRdWall():
     while wall != 1:
         line, column = rd.randint(0, height-1), rd.randint(0, width-1)
         # we don't want to take the main walls
-        if(line != 0 and line != 0 and column != height-1 and column != 0):
-            wall = maze[line, column]
+        if(line != 0 and line != 0 and column != height-1 and column != 0
+                and line+1 < height and column+1 < width):
+            if(maze[line+1][column] != maze[line-1][column]):
+                wall = maze[line][column]
+            elif(maze[line][column+1] != maze[line][column-1]):
+                wall = maze[line][column]
 
     return line, column
 
 
 def changeColor(nbrToChange, nbr):
     global maze, width, height
-    for line in range(height-1):
-        for column in range(width-1):
-            if(maze[line][column] == nbrToChange and nbr != 1 and nbrToChange != 1):
-                maze[line][column] = nbr
-                if(column == width-2 and line == height-2):
-                    maze[line][column+1] = nbr
+    if(nbr != 1 and nbrToChange != 1):
+        maze[maze == nbrToChange] = nbr
     return maze
 
 
@@ -65,7 +67,7 @@ def breakWall():
         if(maze[line][column-1] != maze[line][column+1]):
             maze[line][column] = maze[line][column-1]
             changeColor(maze[line][column+1], maze[line][column-1])
-        if(maze[line-1][column] != maze[line+1][column]):
+        elif(maze[line-1][column] != maze[line+1][column]):
             maze[line][column] = maze[line-1][column]
             changeColor(maze[line+1][column], maze[line-1][column])
     return maze
@@ -123,7 +125,8 @@ def showMaze():
 
 if __name__ == "__main__":
 
-    width, height = 10, 10
+    width, height = 11, 11
     sameNumbers = [False for i in range(height)]
     maze = np.array(generateGrille())
-    showMaze()
+
+    showAnimationMaze()
