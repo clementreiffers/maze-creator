@@ -25,10 +25,9 @@ def generateGrille():
             maze.append([1 for i in range(width)])
     maze.append([1 for i in range(width)])
     maze = np.array(maze)
-    if(not(width % 2 == 0 and height%2 == 0)):
+    if(not(width % 2 == 0 and height % 2 == 0)):
         maze[height-2][width-1] = maze[height-2][width-2]
         maze[1][0] = maze[1][1]
-        print("test")
     else:
         maze[1][0] = maze[1][1]
         maze[height-3][width-1] = maze[height-3][width-3]
@@ -45,11 +44,18 @@ def chooseRdWall():
         # we don't want to take the main walls
         if(line != 0 and line != 0 and column != height-1 and column != 0
                 and line+1 < height and column+1 < width):
-            if(maze[line+1][column] != maze[line-1][column]):
-                wall = maze[line][column]
-            elif(maze[line][column+1] != maze[line][column-1]):
-                wall = maze[line][column]
+            if(maze[line+1][column] != maze[line-1][column]
+                    and maze[line+1][column] != 1 and maze[line-1][column] != 1
+                    and maze[line][column] == 1):
+                    wall = maze[line][column]
 
+            elif(maze[line][column+1] != maze[line][column-1]
+                and maze[line][column+1] !=1 and maze[line][column-1] !=1
+                and maze[line][column] == 1):
+                    wall = maze[line][column]
+
+            else:
+                ...
     return line, column
 
 
@@ -57,6 +63,7 @@ def changeColor(nbrToChange, nbr):
     global maze, width, height
     if(nbr != 1 and nbrToChange != 1):
         maze[maze == nbrToChange] = nbr
+        # print("je change la couleur car nbr=", nbr, "et nbrToChange=", nbrToChange)
     return maze
 
 
@@ -64,12 +71,14 @@ def breakWall():
     global maze, width, height
     line, column = chooseRdWall()
     if(column+1 < width and line+1 < height and column != 0 and line != 0):
-        if(maze[line][column-1] != maze[line][column+1]):
-            maze[line][column] = maze[line][column-1]
-            changeColor(maze[line][column+1], maze[line][column-1])
-        elif(maze[line-1][column] != maze[line+1][column]):
-            maze[line][column] = maze[line-1][column]
-            changeColor(maze[line+1][column], maze[line-1][column])
+        if(maze[line][column+1] != 1 or maze[line+1][column] != 1
+                or maze[line-1][column] != 1 or maze[line][column-1] != 1):
+            if(maze[line][column-1] != maze[line][column+1]):
+                maze[line][column] = maze[line][column-1]
+                changeColor(maze[line][column+1], maze[line][column-1])
+            if(maze[line-1][column] != maze[line+1][column]):
+                maze[line][column] = maze[line-1][column]
+                changeColor(maze[line+1][column], maze[line-1][column])
     return maze
 
 
@@ -99,7 +108,6 @@ def createMaze(anim=0):
                 sameNumbers[i] = True
         if(anim):
             return maze
-    print(maze)
     return maze
 
 
@@ -122,11 +130,24 @@ def showMaze():
     plt.pcolor(maze, cmap=plt.cm.gnuplot2)
     plt.show()
 
-
-if __name__ == "__main__":
-
-    width, height = 11, 11
+def init(w, h):
+    global width, height, maze, sameNumbers
     sameNumbers = [False for i in range(height)]
     maze = np.array(generateGrille())
 
+width, height, maze, sameNumbers = 0, 0, [], []
+
+if __name__ == "__main__":
+
+    width, height = 51, 51
+    init(width, height)
+
+    # if we want to show an animation
     showAnimationMaze()
+
+    # if we only want to show directly the maze
+    showMaze()
+
+    # if we want to only recuperate the matrix of the maze
+    maze = createMaze()
+    print(maze)
