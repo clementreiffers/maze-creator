@@ -132,6 +132,7 @@ def showMaze():
 
 def init(w, h):
     global width, height, maze, sameNumbers
+    width, height = w, h
     sameNumbers = [False for i in range(height)]
     maze = np.array(generateGrille())
 
