@@ -140,7 +140,7 @@ width, height, maze, sameNumbers = 0, 0, [], []
 
 if __name__ == "__main__":
 
-    width, height = 51, 51
+    width, height = 11,11
     init(width, height)
 
     # if we want to show an animation
