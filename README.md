@@ -5,7 +5,7 @@ it is inspired from a video find on youtube, but only for the way of think to cr
 
 ## Before use the script
 
-make this command in yout prompt to install this libraries :
+make this command in your prompt to install this libraries :
 -   matplotlib
 -   numpy
 -   random
