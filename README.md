@@ -1,4 +1,4 @@
-# MazeCreator
+# maze-creator
 
 this script creates random maze.
 it is inspired from a video find on YouTube, but only for the way of think to create the maze.
